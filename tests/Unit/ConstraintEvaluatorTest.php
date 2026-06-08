@@ -46,6 +46,46 @@ class ConstraintEvaluatorTest extends TestCase
         ));
     }
 
+    public function test_every_operator(): void
+    {
+        $pass = fn (string $op, mixed $value, mixed $actual): bool => ConstraintEvaluator::passes(
+            [['attribute' => 'x', 'operator' => $op, 'value' => $value]],
+            ['x' => $actual],
+        );
+
+        $this->assertTrue($pass('=', 'a', 'a'));
+        $this->assertFalse($pass('=', 'a', 'b'));
+
+        $this->assertTrue($pass('!=', 'a', 'b'));
+        $this->assertFalse($pass('!=', 'a', 'a'));
+
+        $this->assertTrue($pass('in', ['a', 'b'], 'b'));
+        $this->assertFalse($pass('in', ['a', 'b'], 'c'));
+
+        $this->assertTrue($pass('not_in', ['a'], 'b'));
+        $this->assertFalse($pass('not_in', ['a'], 'a'));
+
+        $this->assertTrue($pass('>', 5, 6));
+        $this->assertFalse($pass('>', 5, 5));
+
+        $this->assertTrue($pass('>=', 5, 5));
+        $this->assertFalse($pass('>=', 5, 4));
+
+        $this->assertTrue($pass('<', 5, 4));
+        $this->assertFalse($pass('<', 5, 5));
+
+        $this->assertTrue($pass('<=', 5, 5));
+        $this->assertFalse($pass('<=', 5, 6));
+
+        $this->assertTrue($pass('contains', 'ell', 'hello'));
+        $this->assertFalse($pass('contains', 'xyz', 'hello'));
+
+        // Unknown operators never match.
+        $this->assertFalse($pass('~=', 'a', 'a'));
+        // Non-numeric comparisons never match.
+        $this->assertFalse($pass('>', 5, 'abc'));
+    }
+
     public function test_all_constraints_must_pass(): void
     {
         $constraints = [

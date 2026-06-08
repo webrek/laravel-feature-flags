@@ -65,6 +65,20 @@ class DatabaseStoreTest extends TestCase
         $this->assertSame(100, $this->manager()->all()['clamped']->rollout);
     }
 
+    public function test_it_persists_constraints_and_variants(): void
+    {
+        $this->manager()->create(
+            'targeted',
+            constraints: [['attribute' => 'plan', 'operator' => 'in', 'value' => ['pro']]],
+            variants: [['name' => 'a', 'weight' => 1], ['name' => 'b', 'weight' => 1]],
+        );
+
+        $definition = $this->manager()->all()['targeted'];
+
+        $this->assertSame([['attribute' => 'plan', 'operator' => 'in', 'value' => ['pro']]], $definition->constraints);
+        $this->assertSame([['name' => 'a', 'weight' => 1], ['name' => 'b', 'weight' => 1]], $definition->variants);
+    }
+
     public function test_it_lists_and_forgets(): void
     {
         $this->manager()->create('a');
