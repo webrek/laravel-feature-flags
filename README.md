@@ -177,6 +177,30 @@ php artisan feature:deactivate new-checkout
 php artisan feature:rollout new-checkout 50
 ```
 
+## Dashboard
+
+A built-in web UI to toggle features, adjust rollout, and create or delete flags
+at runtime — no deploy, no database client. It is server-rendered (no JS build,
+no CDN) and lives at `/feature-flags` by default.
+
+```php
+// config/feature-flags.php
+'dashboard' => [
+    'enabled' => env('FEATURE_FLAGS_DASHBOARD', true),
+    'path' => 'feature-flags',
+    'middleware' => ['web'],
+],
+```
+
+> The dashboard controls your flags, so protect it. Add auth/authorization
+> middleware (e.g. `['web', 'auth', 'can:manage-features']`) and, in production,
+> restrict who can reach it. It manages the active store, so use the database
+> store. Publish the views to customise them:
+
+```bash
+php artisan vendor:publish --tag=feature-flags-views
+```
+
 ## Requirements
 
 | Component | Version |

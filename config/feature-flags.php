@@ -38,6 +38,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    |
+    | A small web UI to toggle features, adjust rollout, and create or delete
+    | flags at runtime. It manages the active store, so it is only useful with
+    | the database store. Protect it — anyone who reaches it controls your
+    | flags — by adding auth/authorization middleware here.
+    |
+    */
+
+    'dashboard' => [
+        'enabled' => env('FEATURE_FLAGS_DASHBOARD', true),
+        'path' => 'feature-flags',
+        'middleware' => ['web'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Code-defined features (array store)
     |--------------------------------------------------------------------------
     |

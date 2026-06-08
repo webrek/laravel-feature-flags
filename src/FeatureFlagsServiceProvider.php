@@ -4,6 +4,7 @@ namespace Webrek\FeatureFlags;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Webrek\FeatureFlags\Console\ActivateFeatureCommand;
@@ -11,6 +12,7 @@ use Webrek\FeatureFlags\Console\DeactivateFeatureCommand;
 use Webrek\FeatureFlags\Console\ListFeaturesCommand;
 use Webrek\FeatureFlags\Console\RolloutFeatureCommand;
 use Webrek\FeatureFlags\Contracts\Store;
+use Webrek\FeatureFlags\Http\DashboardController;
 use Webrek\FeatureFlags\Http\Middleware\EnsureFeatureIsActive;
 use Webrek\FeatureFlags\Stores\ArrayStore;
 use Webrek\FeatureFlags\Stores\DatabaseStore;
@@ -32,10 +34,18 @@ class FeatureFlagsServiceProvider extends ServiceProvider
 
         $this->app->make(Router::class)->aliasMiddleware('feature', EnsureFeatureIsActive::class);
 
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'feature-flags');
+
+        $this->registerDashboardRoutes();
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/feature-flags.php' => $this->app->configPath('feature-flags.php'),
             ], 'feature-flags-config');
+
+            $this->publishes([
+                __DIR__ . '/../resources/views' => $this->app->resourcePath('views/vendor/feature-flags'),
+            ], 'feature-flags-views');
 
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_features_table.php.stub' => $this->app->databasePath('migrations/' . date('Y_m_d_His') . '_create_features_table.php'),
@@ -48,6 +58,25 @@ class FeatureFlagsServiceProvider extends ServiceProvider
                 RolloutFeatureCommand::class,
             ]);
         }
+    }
+
+    private function registerDashboardRoutes(): void
+    {
+        $dashboard = $this->app['config']->get('feature-flags.dashboard', []);
+
+        if (! ($dashboard['enabled'] ?? false)) {
+            return;
+        }
+
+        Route::middleware($dashboard['middleware'] ?? ['web'])
+            ->prefix($dashboard['path'] ?? 'feature-flags')
+            ->group(function (Router $router): void {
+                $router->get('/', [DashboardController::class, 'index'])->name('feature-flags.dashboard');
+                $router->post('/', [DashboardController::class, 'store'])->name('feature-flags.store');
+                $router->post('/{feature}/toggle', [DashboardController::class, 'toggle'])->name('feature-flags.toggle');
+                $router->post('/{feature}/rollout', [DashboardController::class, 'rollout'])->name('feature-flags.rollout');
+                $router->delete('/{feature}', [DashboardController::class, 'destroy'])->name('feature-flags.destroy');
+            });
     }
 
     /**

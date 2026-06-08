@@ -4,6 +4,15 @@ All notable changes to `webrek/laravel-feature-flags` are documented here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and the
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-07
+
+### Added
+
+- A web dashboard to toggle features, adjust rollout, and create or delete flags
+  at runtime. Server-rendered (no JS build, no CDN), CSRF-protected, with a
+  configurable path and middleware under the `dashboard` config key.
+- Publishable dashboard views (`--tag=feature-flags-views`).
+
 ## [1.0.0] - 2026-06-07
 
 ### Added
