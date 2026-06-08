@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a problem with the package
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+  - type: textarea
+    id: definition
+    attributes:
+      label: Feature definition and call
+      description: The feature configuration and the active()/variant() call that misbehaves.
+      render: php
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+    validations:
+      required: true
+  - type: dropdown
+    id: store
+    attributes:
+      label: Store
+      options:
+        - database
+        - array
+    validations:
+      required: true
