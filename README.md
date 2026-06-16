@@ -206,7 +206,7 @@ php artisan vendor:publish --tag=feature-flags-views
 | Component | Version |
 | --------- | ------- |
 | PHP | 8.2+ |
-| Laravel | 12.x |
+| Laravel | 12.x / 13.x |
 
 ## Testing
 
