@@ -1,15 +1,15 @@
 # Laravel Feature Flags
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/webrek/laravel-feature-flags.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-feature-flags)
-[![Total Downloads](https://img.shields.io/packagist/dt/webrek/laravel-feature-flags.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-feature-flags)
+[![Última versión en Packagist](https://img.shields.io/packagist/v/webrek/laravel-feature-flags.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-feature-flags)
+[![Descargas totales](https://img.shields.io/packagist/dt/webrek/laravel-feature-flags.svg?style=flat-square)](https://packagist.org/packages/webrek/laravel-feature-flags)
 [![Tests](https://img.shields.io/github/actions/workflow/status/webrek/laravel-feature-flags/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/webrek/laravel-feature-flags/actions/workflows/tests.yml)
-[![PHP Version](https://img.shields.io/packagist/php-v/webrek/laravel-feature-flags.svg?style=flat-square)](https://php.net)
-[![License](https://img.shields.io/packagist/l/webrek/laravel-feature-flags.svg?style=flat-square)](LICENSE)
+[![Versión de PHP](https://img.shields.io/packagist/php-v/webrek/laravel-feature-flags.svg?style=flat-square)](https://php.net)
+[![Licencia](https://img.shields.io/packagist/l/webrek/laravel-feature-flags.svg?style=flat-square)](LICENSE)
 
-Feature flags for Laravel with **percentage rollouts**, **rule-based targeting**
-and **A/B variants** — flip features at runtime without a deploy.
+Feature flags para Laravel con **rollouts por porcentaje**, **targeting basado en reglas**
+y **variantes A/B** — activa o desactiva funcionalidades en tiempo de ejecución sin un deploy.
 
-## Quickstart
+## Inicio rápido
 
 ```bash
 composer require webrek/laravel-feature-flags
@@ -20,15 +20,15 @@ php artisan migrate
 ```php
 use Webrek\FeatureFlags\Facades\Features;
 
-// Define a feature rolled out to 25% of users:
+// Define una funcionalidad desplegada al 25% de los usuarios:
 Features::create('new-checkout', rollout: 25);
 
-// Check it (defaults to the authenticated user):
+// Verifícala (por defecto, el usuario autenticado):
 if (Features::active('new-checkout')) {
     // ...
 }
 
-// Or for a specific scope:
+// O para un scope específico:
 Features::for($user)->active('new-checkout');
 ```
 
@@ -38,27 +38,27 @@ Features::for($user)->active('new-checkout');
 @endfeature
 ```
 
-## Why not roll your own boolean column
+## Por qué no usar tu propia columna booleana
 
-A `boolean` column on a settings table answers one question: is this on for
-everyone? Real feature work needs more:
+Una columna `boolean` en una tabla de configuración responde una sola pregunta: ¿está activo para
+todos? El trabajo real con funcionalidades necesita más:
 
-- **Gradual rollout.** Ship to 5% of users, watch your metrics, raise it to 25%,
-  then 100% — and a user who was in the 5% stays in as you climb, because
-  bucketing is deterministic, not random per request.
-- **Targeting.** "Enterprise plans only", "users in MX and US", "accounts older
-  than 30 days" — expressed as constraints, not branches scattered through code.
-- **A/B variants.** Assign each user a stable variant (`blue` vs `green`) and
-  measure which converts.
-- **Runtime control.** Flip a flag from the database or an artisan command
-  without a deploy, and kill a misbehaving feature instantly.
+- **Rollout gradual.** Lanza al 5% de los usuarios, observa tus métricas, súbelo al 25%,
+  luego al 100% — y un usuario que estaba en el 5% se mantiene dentro mientras escalas, porque
+  el bucketing es determinista, no aleatorio en cada request.
+- **Targeting.** "Solo planes enterprise", "usuarios en MX y US", "cuentas con más
+  de 30 días" — expresado como restricciones, no como ramas dispersas por todo el código.
+- **Variantes A/B.** Asigna a cada usuario una variante estable (`blue` vs `green`) y
+  mide cuál convierte.
+- **Control en tiempo de ejecución.** Activa o desactiva un flag desde la base de datos o un comando de artisan
+  sin un deploy, y desactiva al instante una funcionalidad que se comporta mal.
 
-This package does all of that, and unlike Laravel Pennant it stores rollouts,
-constraints and variants as data you can manage — not just closures in code.
+Este paquete hace todo eso y, a diferencia de Laravel Pennant, almacena rollouts,
+restricciones y variantes como datos que puedes administrar — no solo como closures en el código.
 
-## Defining features
+## Definir funcionalidades
 
-With the database store (the default), define and manage at runtime:
+Con el store de base de datos (el predeterminado), defínelas y adminístralas en tiempo de ejecución:
 
 ```php
 Features::create(
@@ -80,8 +80,8 @@ Features::rollout('new-checkout', 50);
 Features::forget('old-flag');
 ```
 
-Or declare them in code with the **array store** (great for tests or simple
-apps) — set `FEATURE_FLAGS_STORE=array` and fill `config/feature-flags.php`:
+O decláralas en el código con el **store de arreglo** (ideal para pruebas o aplicaciones
+simples) — establece `FEATURE_FLAGS_STORE=array` y llena `config/feature-flags.php`:
 
 ```php
 'features' => [
@@ -93,32 +93,32 @@ apps) — set `FEATURE_FLAGS_STORE=array` and fill `config/feature-flags.php`:
 ],
 ```
 
-## Checking features
+## Verificar funcionalidades
 
 ```php
-Features::active('new-checkout');             // default scope (auth user)
-Features::active('new-checkout', $user);       // explicit scope
+Features::active('new-checkout');             // scope por defecto (usuario autenticado)
+Features::active('new-checkout', $user);       // scope explícito
 Features::inactive('new-checkout', $team);
 Features::variant('button-color', $user);      // 'blue' | 'green' | null
-Features::for($user)->active('new-checkout');  // fluent
+Features::for($user)->active('new-checkout');  // fluido
 
-feature('new-checkout');                       // helper, returns bool
-feature();                                      // helper, returns the manager
+feature('new-checkout');                       // helper, devuelve bool
+feature();                                      // helper, devuelve el manager
 ```
 
-A feature resolves to **active** only when every gate passes: the master switch
-is on, the scope matches all constraints, it falls within the rollout
-percentage, and (for a variant feature) a variant is assigned.
+Una funcionalidad se resuelve como **activa** solo cuando pasan todas las compuertas: el interruptor maestro
+está encendido, el scope cumple todas las restricciones, cae dentro del porcentaje de
+rollout y (para una funcionalidad con variantes) se asigna una variante.
 
 ## Scopes
 
-Pass anything as a scope:
+Pasa cualquier cosa como scope:
 
-- **`null`** (or omit) — the authenticated user, falling back to a global scope.
-- An **Eloquent model** — bucketed by class + key; its attributes feed targeting.
-- Anything implementing **`FeatureScope`** — you control the identifier and the
-  attributes exposed to constraints.
-- A **string or int** — used directly as the bucketing identity.
+- **`null`** (u omítelo) — el usuario autenticado, con fallback a un scope global.
+- Un **modelo de Eloquent** — agrupado por clase + clave; sus atributos alimentan el targeting.
+- Cualquier cosa que implemente **`FeatureScope`** — tú controlas el identificador y los
+  atributos expuestos a las restricciones.
+- Un **string o int** — usado directamente como identidad de bucketing.
 
 ```php
 use Webrek\FeatureFlags\Contracts\FeatureScope;
@@ -137,10 +137,10 @@ class Team extends Model implements FeatureScope
 }
 ```
 
-## Targeting constraints
+## Restricciones de targeting
 
-Each constraint is `['attribute' => ..., 'operator' => ..., 'value' => ...]` and
-all must pass. Supported operators:
+Cada restricción es `['attribute' => ..., 'operator' => ..., 'value' => ...]` y
+todas deben cumplirse. Operadores soportados:
 
 `=` · `!=` · `in` · `not_in` · `>` · `>=` · `<` · `<=` · `contains`
 
@@ -151,7 +151,7 @@ constraints: [
 ]
 ```
 
-## Blade & middleware
+## Blade y middleware
 
 ```blade
 @feature('new-dashboard')
@@ -165,7 +165,7 @@ constraints: [
 
 ```php
 Route::get('/beta', BetaController::class)->middleware('feature:new-dashboard');
-// 404 unless the feature is active for the current user
+// 404 a menos que la funcionalidad esté activa para el usuario actual
 ```
 
 ## Artisan
@@ -179,9 +179,9 @@ php artisan feature:rollout new-checkout 50
 
 ## Dashboard
 
-A built-in web UI to toggle features, adjust rollout, and create or delete flags
-at runtime — no deploy, no database client. It is server-rendered (no JS build,
-no CDN) and lives at `/feature-flags` by default.
+Una interfaz web integrada para activar funcionalidades, ajustar el rollout y crear o eliminar flags
+en tiempo de ejecución — sin deploy, sin cliente de base de datos. Se renderiza en el servidor (sin build de JS,
+sin CDN) y vive en `/feature-flags` por defecto.
 
 ```php
 // config/feature-flags.php
@@ -192,38 +192,38 @@ no CDN) and lives at `/feature-flags` by default.
 ],
 ```
 
-> The dashboard controls your flags, so protect it. Add auth/authorization
-> middleware (e.g. `['web', 'auth', 'can:manage-features']`) and, in production,
-> restrict who can reach it. It manages the active store, so use the database
-> store. Publish the views to customise them:
+> El dashboard controla tus flags, así que protégelo. Agrega middleware de autenticación/autorización
+> (por ejemplo, `['web', 'auth', 'can:manage-features']`) y, en producción,
+> restringe quién puede acceder a él. Administra el store activo, así que usa el store de
+> base de datos. Publica las vistas para personalizarlas:
 
 ```bash
 php artisan vendor:publish --tag=feature-flags-views
 ```
 
-## Requirements
+## Requisitos
 
-| Component | Version |
+| Componente | Versión |
 | --------- | ------- |
 | PHP | 8.2+ |
 | Laravel | 12.x / 13.x |
 
-## Testing
+## Pruebas
 
 ```bash
 composer install
 composer test
 ```
 
-## Contributing
+## Contribuir
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Security
+## Seguridad
 
-Please review the [security policy](SECURITY.md) before reporting a
-vulnerability.
+Por favor revisa la [política de seguridad](SECURITY.md) antes de reportar una
+vulnerabilidad.
 
-## License
+## Licencia
 
-The MIT License (MIT). See [LICENSE](LICENSE).
+La Licencia MIT (MIT). Consulta [LICENSE](LICENSE).
